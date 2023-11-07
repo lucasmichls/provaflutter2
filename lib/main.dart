@@ -14,6 +14,7 @@ class MeuAppFinancas extends StatefulWidget {
 class _MeuAppFinancasState extends State<MeuAppFinancas> {
   Map<String, dynamic> currencies = {};
   Map<String, dynamic> bitcoinCurrencies = {};
+  Map<String, dynamic> stockData = {};
 
   @override
   void initState() {
@@ -26,6 +27,11 @@ class _MeuAppFinancasState extends State<MeuAppFinancas> {
     fetchBitcoinCurrencies().then((data) {
       setState(() {
         bitcoinCurrencies = data;
+      });
+    });
+    fetchStockData().then((data) {
+      setState(() {
+        stockData = data;
       });
     });
   }
@@ -88,6 +94,43 @@ class _MeuAppFinancasState extends State<MeuAppFinancas> {
     }
   }
 
+  Future<Map<String, dynamic>> fetchStockData() async {
+    final response = await http.get(Uri.parse(
+        'https://api.hgbrasil.com/finance?key=0c42162b&format=json-cors'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return {
+        'IBOVESPA': {
+          'valor': data['results']['stocks']['IBOVESPA']['points'],
+          'variação': data['results']['stocks']['IBOVESPA']['variation'],
+        },
+        'NASDAQ': {
+          'valor': data['results']['stocks']['NASDAQ']['points'],
+          'variação': data['results']['stocks']['NASDAQ']['variation'],
+        },
+        'IFIX': {
+          'valor': data['results']['stocks']['IFIX']['points'],
+          'variação': data['results']['stocks']['IFIX']['variation'],
+        },
+        'DOWJONES': {
+          'valor': data['results']['stocks']['DOWJONES']['points'],
+          'variação': data['results']['stocks']['DOWJONES']['variation'],
+        },
+        'CAC': {
+          'valor': data['results']['stocks']['CAC']['points'],
+          'variação': data['results']['stocks']['CAC']['variation'],
+        },
+        'NIKKEI': {
+          'valor': data['results']['stocks']['NIKKEI']['points'],
+          'variação': data['results']['stocks']['NIKKEI']['variation'],
+        },
+      };
+    } else {
+      throw Exception('Failed to load stock data');
+    }
+  }
+
   int _currentIndex = 0;
 
   void _onTabTapped(int index) {
@@ -134,7 +177,7 @@ class _MeuAppFinancasState extends State<MeuAppFinancas> {
       case 0:
         return MoedasPage(currencies);
       case 1:
-        return AcoesPage();
+        return AcoesPage(stockData);
       case 2:
         return BitCoinPage(bitcoinCurrencies);
       default:
@@ -185,7 +228,7 @@ class MoedasPage extends StatelessWidget {
         children: [
           Text(
             '$name: ${value.toStringAsFixed(4)}',
-            style: TextStyle(fontSize: 18, color: textColor),
+            style: TextStyle(fontSize: 22, color: Colors.black),
           ),
           SizedBox(width: 8),
           Container(
@@ -195,8 +238,8 @@ class MoedasPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
             ),
             child: Text(
-              'Variação: ${variation.toStringAsFixed(4)}',
-              style: TextStyle(fontSize: 18, color: Colors.white),
+              '${variation.toStringAsFixed(4)}',
+              style: TextStyle(fontSize: 14, color: Colors.white),
             ),
           ),
         ],
@@ -206,6 +249,10 @@ class MoedasPage extends StatelessWidget {
 }
 
 class AcoesPage extends StatelessWidget {
+  final Map<String, dynamic> stockData;
+
+  AcoesPage(this.stockData);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,7 +261,41 @@ class AcoesPage extends StatelessWidget {
         backgroundColor: Colors.green[900],
       ),
       body: Center(
-        child: Text('Conteúdo da página de Ações'),
+        child: Column(
+          children: stockData.entries.map((entry) {
+            String name = entry.key;
+            double value = entry.value['valor'];
+            double variation = entry.value['variação'];
+
+            Color textColor = variation >= 0 ? Colors.blue : Colors.red;
+            Color backgroundColor = variation >= 0 ? Colors.blue : Colors.red;
+
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '$name: ${value.toStringAsFixed(2)}',
+                    style: TextStyle(fontSize: 22, color: Colors.black),
+                  ),
+                  SizedBox(width: 8),
+                  Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: backgroundColor,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      '${variation.toStringAsFixed(2)}',
+                      style: TextStyle(fontSize: 14, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.green[900],
@@ -252,7 +333,7 @@ class BitCoinPage extends StatelessWidget {
                 children: [
                   Text(
                     '$name: ${value.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 18, color: textColor),
+                    style: TextStyle(fontSize: 22, color: Colors.black),
                   ),
                   SizedBox(width: 8),
                   Container(
@@ -262,8 +343,8 @@ class BitCoinPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
-                      'Variação: ${variation.toStringAsFixed(3)}',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                      '${variation.toStringAsFixed(3)}',
+                      style: TextStyle(fontSize: 14, color: Colors.white),
                     ),
                   ),
                 ],
