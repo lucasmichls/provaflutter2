@@ -73,20 +73,21 @@ class _MeuAppFinancasState extends State<MeuAppFinancas> {
       final Map<String, dynamic> data = json.decode(response.body);
       return {
         'Blockchain': {
-          'valor': data['results']['currencies']['BTC']['buy'],
-          'variação': data['results']['currencies']['BTC']['variation'],
+          'valor': data['results']['bitcoin']['blockchain_info']['buy'],
+          'variação': data['results']['bitcoin']['blockchain_info']
+              ['variation'],
         },
         'Coinbase': {
-          'valor': data['results']['currencies']['BTC']['buy'],
-          'variação': data['results']['currencies']['BTC']['variation'],
+          'valor': data['results']['bitcoin']['coinbase']['last'],
+          'variação': data['results']['bitcoin']['coinbase']['variation'],
         },
         'BitStamp': {
-          'valor': data['results']['currencies']['BTC']['buy'],
-          'variação': data['results']['currencies']['BTC']['variation'],
+          'valor': data['results']['bitcoin']['bitstamp']['buy'],
+          'variação': data['results']['bitcoin']['bitstamp']['variation'],
         },
         'FoxBit': {
-          'valor': data['results']['currencies']['BTC']['buy'],
-          'variação': data['results']['currencies']['BTC']['variation'],
+          'valor': data['results']['bitcoin']['foxbit']['last'],
+          'variação': data['results']['bitcoin']['foxbit']['variation'],
         },
       };
     } else {
